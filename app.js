@@ -8,7 +8,8 @@ import database from "./prisma.js";
 import multer from "multer";
 import {storage} from "./storage/storage.js";
 import path from "path"
-import ejs from "ejs"
+
+
 
 
 dotenv.config()
@@ -34,11 +35,8 @@ app.set('views', path.join(__dirname, './views'));
 const upload = multer({ 
     // storage 
 });
-
-
-
 app.get('/',(req,res)=>{
-    res.send('hello')
+    res.render('index')
 })
 app.get("/hexfiles", async (req,res)=>{
     try {
@@ -49,7 +47,7 @@ app.get("/hexfiles", async (req,res)=>{
         console.log(error);
     }
 })
-app.post("/uploadFile", upload.single('file'),async (req, res) => {
+app.post("/uploadfile", upload.single('file'),async (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({ error: 'No file uploaded' });
@@ -65,7 +63,40 @@ app.post("/uploadFile", upload.single('file'),async (req, res) => {
           } 
           return res.status(400).json({ error: 'not supported file' });
     } catch (error) {
-        return res.status(400).json({ error: error.message });
+        return res.status(400).json({ error: error });
+    }
+})
+app.get("/hexfiles/latestfile", async (req, res)=>{
+    try {
+        const hexFile = await database.hex.findMany({})
+    // const buffer = Buffer.from(hexFile.file.buffer, "base64");
+    // res.writeHead(200, {'Content-Type': 'application/octet-stream','Content-disposition':`attachment; filename=${hexFile.file.originalname.slice(0,-4)}${new Date().getTime()}.hex`});
+
+    // res.end( buffer );
+    res.status(201).json({file:hexFile[hexFile.length-1]})
+    } catch (error) {
+        res.status(400).json({error:error.message})
+    }
+})
+app.get("/hexfiles/latestfile/hex-content", async (req, res)=>{
+    try {
+        const hexFile = await database.hex.findMany({})
+    const buffer = Buffer.from(hexFile[hexFile.length-1].file.buffer, "base64");
+    res.end( buffer );
+    } catch (error) {
+        res.status(400).json({error:error.message})
+    }
+})
+app.get("/hexfiles/latestfile/download", async (req, res)=>{
+    try {
+        const hexFile = await database.hex.findMany({})
+    const buffer = Buffer.from(hexFile[hexFile.length-1].file.buffer, "base64");
+    res.writeHead(200, {'Content-Type': 'application/octet-stream','Content-disposition':`attachment; filename=${hexFile[hexFile.length-1].file.originalname.slice(0,-4)}${new Date().getTime()}.hex`});
+
+    res.end( buffer );
+    // res.status(201).json({file:hexFile})
+    } catch (error) {
+        res.status(400).json({error:error.message})
     }
 })
 app.get("/hexfiles/:id", async (req, res)=>{
@@ -75,11 +106,46 @@ app.get("/hexfiles/:id", async (req, res)=>{
             id:+req.params.id
         },
     })
+    // const buffer = Buffer.from(hexFile.file.buffer, "base64");
+    // res.writeHead(200, {'Content-Type': 'application/octet-stream','Content-disposition':`attachment; filename=${hexFile.file.originalname.slice(0,-4)}${new Date().getTime()}.hex`});
+
+    // res.end( buffer );
     res.status(201).json({file:hexFile})
     } catch (error) {
         res.status(400).json({error:error.message})
     }
 })
+app.get("/hexfiles/:id/hex-content", async (req, res)=>{
+    try {
+        const hexFile = await database.hex.findFirst({
+        where:{
+            id:+req.params.id
+        },
+    })
+    const buffer = Buffer.from(hexFile.file.buffer, "base64");
+    res.end( buffer );
+    } catch (error) {
+        res.status(400).json({error:error.message})
+    }
+})
+app.get("/hexfiles/:id/download", async (req, res)=>{
+    try {
+        const hexFile = await database.hex.findFirst({
+        where:{
+            id:+req.params.id
+        },
+    })
+    const buffer = Buffer.from(hexFile.file.buffer, "base64");
+    res.writeHead(200, {'Content-Type': 'application/octet-stream','Content-disposition':`attachment; filename=${hexFile.file.originalname.slice(0,-4)}${new Date().getTime()}.hex`});
+
+    res.end( buffer );
+    // res.status(201).json({file:hexFile})
+    } catch (error) {
+        res.status(400).json({error:error.message})
+    }
+})
+
+
 app.listen(PORT,()=>{
     console.log(`app listening on port ${PORT}`);
 })
