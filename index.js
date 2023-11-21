@@ -146,7 +146,7 @@ app.get("/hexfiles/:id/download", async (req, res)=>{
 })
 
 
-app.listen(PORT,()=>{
+app.listen(process.env.PORT,()=>{
     console.log(`app listening on port ${PORT}`);
 })
 
