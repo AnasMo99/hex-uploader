@@ -8,6 +8,7 @@ import database from "./prisma.js";
 import multer from "multer";
 import {storage} from "./storage/storage.js";
 import path from "path"
+import * as bcrypt from 'bcrypt';
 
 
 
@@ -53,7 +54,6 @@ app.post("/uploadfile", upload.single('file'),async (req, res) => {
             return res.status(400).json({ error: 'No file uploaded' });
           }
           if(req.file.mimetype==="application/octet-stream"){
-      
               const newHex = await database.hex.create({
                   data:{
                       file:req.file
