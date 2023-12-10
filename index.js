@@ -36,9 +36,11 @@ app.set('views', path.join(__dirname, './views'));
 const upload = multer({ 
     // storage 
 });
+//web page to upload the hexfile
 app.get('/',(req,res)=>{
     res.render('index')
 })
+//see all files object uploaded in database
 app.get("/hexfiles", async (req,res)=>{
     try {
         const hexFiles = await database.hex.findMany({})
@@ -48,6 +50,7 @@ app.get("/hexfiles", async (req,res)=>{
         console.log(error);
     }
 })
+
 app.post("/uploadfile", upload.single('file'),async (req, res) => {
     try {
         if (!req.file) {
@@ -66,6 +69,7 @@ app.post("/uploadfile", upload.single('file'),async (req, res) => {
         return res.status(400).json({ error: error });
     }
 })
+//see newest file object uploaded in database
 app.get("/hexfiles/latestfile", async (req, res)=>{
     try {
         const hexFile = await database.hex.findMany({})
@@ -78,27 +82,44 @@ app.get("/hexfiles/latestfile", async (req, res)=>{
         res.status(400).json({error:error.message})
     }
 })
+//see newest file in hex form in the browser
 app.get("/hexfiles/latestfile/hex-content", async (req, res)=>{
     try {
         const hexFile = await database.hex.findMany({})
     const buffer = Buffer.from(hexFile[hexFile.length-1].file.buffer, "base64");
+    // console.log(buffer.toString("hex"));
     res.end( buffer );
     } catch (error) {
         res.status(400).json({error:error.message})
     }
 })
+//direct link to download the newest hex file
 app.get("/hexfiles/latestfile/download", async (req, res)=>{
     try {
         const hexFile = await database.hex.findMany({})
-    const buffer = Buffer.from(hexFile[hexFile.length-1].file.buffer, "base64");
-    res.writeHead(200, {'Content-Type': 'application/octet-stream','Content-disposition':`attachment; filename=${hexFile[hexFile.length-1].file.originalname.slice(0,-4)}${new Date().getTime()}.hex`});
-
-    res.end( buffer );
-    // res.status(201).json({file:hexFile})
+        //this if to check if the file downloaded before or not 
+        //if you didn't download it before it will be false and will download the file otherwise it will be true and return this json object {message:"you downloaded this file before"}
+        if(!hexFile[hexFile.length-1].downloaded){
+            const buffer = Buffer.from(hexFile[hexFile.length-1].file.buffer, "base64");
+            res.writeHead(200, {'Content-Type': 'application/octet-stream','Content-disposition':`attachment; filename=${hexFile[hexFile.length-1].file.originalname.slice(0,-4)}${new Date().getTime()}.hex`});
+            await database.hex.update({
+                where:{
+                    id:+hexFile[hexFile.length-1].id
+                },
+                data:{
+                    downloaded:true
+                }
+            })
+            res.end( buffer );
+            // res.status(201).json({file:hexFile})
+        } else {
+            res.json({message:"you downloaded this file before"})
+        }
     } catch (error) {
         res.status(400).json({error:error.message})
     }
 })
+//see specific file object uploaded in database by Id
 app.get("/hexfiles/:id", async (req, res)=>{
     try {
         const hexFile = await database.hex.findFirst({
@@ -115,6 +136,7 @@ app.get("/hexfiles/:id", async (req, res)=>{
         res.status(400).json({error:error.message})
     }
 })
+//see specific file in hex form in the browser by Id
 app.get("/hexfiles/:id/hex-content", async (req, res)=>{
     try {
         const hexFile = await database.hex.findFirst({
@@ -128,6 +150,7 @@ app.get("/hexfiles/:id/hex-content", async (req, res)=>{
         res.status(400).json({error:error.message})
     }
 })
+//direct link to download specific hex file by Id
 app.get("/hexfiles/:id/download", async (req, res)=>{
     try {
         const hexFile = await database.hex.findFirst({

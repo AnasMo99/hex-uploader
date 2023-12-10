@@ -16,5 +16,5 @@ datasource db {
 model Hex {
   id                  Int             @id @default(autoincrement())
   file                Json
-
+  downloaded          Boolean         @default(false)
 }
