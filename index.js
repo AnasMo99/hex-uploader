@@ -6,9 +6,8 @@ import cors from "cors";
 import dotenv from "dotenv";
 import database from "./prisma.js";
 import multer from "multer";
-import {storage} from "./storage/storage.js";
 import path from "path"
-import * as bcrypt from 'bcrypt';
+
 
 
 
@@ -160,7 +159,14 @@ app.get("/hexfiles/:id/download", async (req, res)=>{
     })
     const buffer = Buffer.from(hexFile.file.buffer, "base64");
     res.writeHead(200, {'Content-Type': 'application/octet-stream','Content-disposition':`attachment; filename=${hexFile.file.originalname.slice(0,-4)}${new Date().getTime()}.hex`});
-
+    await database.hex.update({
+        where:{
+            id:+hexFile.id
+        },
+        data:{
+            downloaded:true
+        }
+    })
     res.end( buffer );
     // res.status(201).json({file:hexFile})
     } catch (error) {
