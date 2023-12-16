@@ -5,6 +5,14 @@
     <title>Node.js Simple File Upload</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css">
     <style>
+        #container{
+            background-image: url('https://e0.pxfuel.com/wallpapers/272/71/desktop-wallpaper-transformers-logo-minimalist.jpg');
+            background-repeat: no-repeat;
+            background-size: cover;
+            height: 100vh;
+            text-align: center;
+            padding: 5rem 10rem 0;
+        }
         #uploadForm{
             padding-top: 20px;
             display: flex;
@@ -16,14 +24,19 @@
         button.btn{
             flex: 0.15;
         }
+        #Head{
+            background-color: white;
+            border-radius: 10px;
+            height: 2.5rem;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <form action="/uploadFile" method="post" enctype="multipart/form-data">
+    <div id="container">
+        <h2 id="Head">autobots</h2>
+        <form action="/uploadFile" method="post" id="uploadForm" enctype="multipart/form-data">
             <input type="file" name="file"
-            class="btn btn-primary" id="file"
-            multiple>
+            class="btn btn-primary" id="file">
             <button class="btn btn-primary" type="submit" style="border-radius: 4px;">
                 Upload
             </button>
